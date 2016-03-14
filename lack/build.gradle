@@ -1,0 +1,5 @@
+dependencies {
+    compile(
+            ["com.datastax.cassandra:cassandra-driver-core:$cassandraVersion"]
+    )
+}

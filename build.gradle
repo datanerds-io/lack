@@ -1,0 +1,30 @@
+task wrapper(type: Wrapper) {
+    gradleVersion = project.gradle.gradleVersion
+}
+
+ext {
+    sourceCompatibility = 1.8
+    version = '1.0.0'
+    cassandraVersion = '2.1.9'
+}
+
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile(
+                ["org.hamcrest:hamcrest-all:1.1"],
+                ["org.mockito:mockito-all:1.10.19"],
+                ["org.slf4j:slf4j-simple:1.7.18"]
+        )
+        testCompile("junit:junit:4.12") {
+            exclude group: 'org.hamcrest', module: 'hamcrest-core'
+        }
+//        compile()
+    }
+}
