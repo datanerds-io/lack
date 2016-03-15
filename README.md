@@ -6,4 +6,4 @@ LACK is a consensus library based on the Cassandra database system. See [here](h
 
 Make sure that a Cassandra database is running and the keyspace `lack` exists.
 
-The run 'gradle build'.
+The run `gradle build`.
