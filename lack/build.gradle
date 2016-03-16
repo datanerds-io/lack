@@ -2,4 +2,7 @@ dependencies {
     compile(
             ["com.datastax.cassandra:cassandra-driver-core:$cassandraVersion"]
     )
+    testCompile(
+            ["org.cassandraunit:cassandra-unit-shaded:2.1.9.2"]
+    )
 }

@@ -1,6 +1,9 @@
 package io.datanerds.lack;
 
 import io.datanerds.lack.cassandra.LackConfig;
+import org.cassandraunit.CassandraCQLUnit;
+import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
@@ -12,49 +15,56 @@ public class LackTest {
     private static Lack lack;
     private static Lack otherLack;
     private String resource;
+    private static boolean isSetupDone = false;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
-    @BeforeClass
-    public static void setup() {
-        lack = new Lack(config, "lack");
-        otherLack = new Lack(config, "otherLack");
-    }
+    @ClassRule
+    public static CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(
+            new ClassPathCQLDataSet("setup.cql", "lack"));
 
-    @AfterClass
-    public static void tearDown() {
-        lack.stop();
+
+    @BeforeClass
+    public static void setupCassandra() throws Exception {
+        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
     }
 
     @Before
-    public void setupResource() {
+    public void setup() {
         this.resource = UUID.randomUUID().toString();
+        if (isSetupDone) {
+            return;
+        }
+        this.lack = new Lack(config, "lack");
+        this.otherLack = new Lack(config, "otherLack");
+        isSetupDone = true;
     }
 
+
     @Test
-    public void simpleAcquireRenewAndRelease() {
+    public void simpleAcquireRenewAndRelease() throws LackException {
         lack.acquire(resource);
         lack.renew(resource);
         lack.release(resource);
     }
 
     @Test
-    public void alreadyLocked() {
+    public void alreadyLocked() throws LackException {
         lack.acquire(resource);
         thrown.expect(LackException.class);
         lack.acquire(resource);
     }
 
     @Test
-    public void alreadyLockedByOther() {
+    public void alreadyLockedByOther() throws LackException {
         lack.acquire(resource);
         thrown.expect(LackException.class);
         otherLack.acquire(resource);
     }
 
     @Test
-    public void alreadyReleased() {
+    public void alreadyReleased() throws LackException {
         lack.acquire(resource);
         lack.release(resource);
         thrown.expect(LackException.class);
@@ -62,7 +72,7 @@ public class LackTest {
     }
 
     @Test
-    public void testReleaseAfterTtl() throws InterruptedException {
+    public void testReleaseAfterTtl() throws Exception {
         lack.acquire(resource);
         Thread.sleep(1200);
         lack.acquire(resource);
