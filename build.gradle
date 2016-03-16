@@ -4,13 +4,12 @@ task wrapper(type: Wrapper) {
 
 ext {
     sourceCompatibility = 1.8
-    version = '1.0.0'
     cassandraVersion = '2.1.9'
 }
 
-
 subprojects {
     apply plugin: 'java'
+    apply plugin: 'osgi'
 
     repositories {
         mavenCentral()
@@ -26,5 +25,11 @@ subprojects {
             exclude group: 'org.hamcrest', module: 'hamcrest-core'
         }
 //        compile()
+    }
+    jar {
+        manifest {
+            version = project.version
+            symbolicName = "io.datanerds.$baseName"
+        }
     }
 }
