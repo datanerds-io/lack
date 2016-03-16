@@ -22,21 +22,21 @@ public class Lack {
         statements.setTtl(lackConfig.ttlInSeconds);
     }
 
-    public void acquire(String resource) {
+    public void acquire(String resource) throws LackException {
         ResultSet result = statements.acquire(resource, owner);
         if (!result.wasApplied()) {
             throw new LackException(String.format("Could not acquire lock for '%s'", resource));
         }
     }
 
-    public void renew(String resource) {
+    public void renew(String resource) throws LackException {
         ResultSet result = statements.renew(resource, owner);
         if (!result.wasApplied()) {
             throw new LackException(String.format("Could not renew lock for '%s'", resource));
         }
     }
 
-    public void release(String resource) {
+    public void release(String resource) throws LackException {
         ResultSet result = statements.release(resource, owner);
         if (!result.wasApplied()) {
             throw new LackException(String.format("Could not release lock for '%s'", resource));
