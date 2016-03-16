@@ -13,7 +13,7 @@ public class CassandraClient {
     private Cluster cluster;
 
     public Session init(LackConfig config) {
-        Cluster.Builder clusterBuilder = new Cluster.Builder().addContactPoints(config.nodes)
+        Cluster.Builder clusterBuilder = new Cluster.Builder().addContactPoints(config.nodes).withPort(config.port)
                 .withSocketOptions(new SocketOptions().setTcpNoDelay(true).setReuseAddress(true));
         if (config.username != null && config.password != null) {
             clusterBuilder.withCredentials(config.username, config.password);
