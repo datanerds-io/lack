@@ -4,6 +4,6 @@ LACK is a consensus library based on the Cassandra database system. See [here](h
 
 # Build
 
-Make sure that a Cassandra database is running and the keyspace `lack` exists.
+The test will start an embedded cassandra server. If the used ports are already in use the tests will fail.
 
-Then run `gradle build`.
+A `gradle build` will build the project.
