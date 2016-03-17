@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/datanerds-io/lack.svg?branch=develop)](https://travis-ci.org/datanerds-io/lack)
+
 # About
 
 LACK is a consensus library based on the Cassandra database system. See [here](http://www.datastax.com/dev/blog/consensus-on-cassandra) for details on its implementation.
