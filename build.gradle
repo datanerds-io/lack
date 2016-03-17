@@ -5,11 +5,22 @@ task wrapper(type: Wrapper) {
 ext {
     sourceCompatibility = 1.8
     cassandraVersion = '2.1.9'
+    
+    skipSigning = project.hasProperty('skipSigning') && skipSigning.toBoolean()
+    shouldSign = !skipSigning && !version.endsWith("SNAPSHOT") && project.gradle.startParameter.taskNames.any {
+        it.contains("upload")
+    }
+
+    mavenUrl = project.hasProperty('mavenUrl') ? project.mavenUrl : ''
+    mavenUsername = project.hasProperty('mavenUsername') ? project.mavenUsername : ''
+    mavenPassword = project.hasProperty('mavenPassword') ? project.mavenPassword : ''
 }
 
 subprojects {
     apply plugin: 'java'
     apply plugin: 'osgi'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
     repositories {
         mavenCentral()
@@ -26,10 +37,74 @@ subprojects {
         }
 //        compile()
     }
+
+    //Some OSGi information
     jar {
         manifest {
             version = project.version
-            symbolicName = "io.datanerds.$baseName"
+            symbolicName = "$project.group.$baseName"
         }
+    }
+
+    //
+    uploadArchives {
+        repositories {
+            signing {
+                required { shouldSign }
+                sign configurations.archives
+
+                // To test locally, replace mavenUrl in ~/.gradle/gradle.properties to file://localhost/tmp/myRepo/
+                mavenDeployer {
+                    beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+                    repository(url: "${mavenUrl}") {
+                        authentication(userName: "${mavenUsername}", password: "${mavenPassword}")
+                    }
+                    afterEvaluate {
+                        pom.artifactId = "${archivesBaseName}"
+                        pom.project {
+                            name 'lack'
+                            packaging 'jar'
+                            url 'http://datanerds.io'
+                            description 'LACK is a simple consensus API on top of cassandra'
+
+                            licenses {
+                                license {
+                                    name 'The Apache License, Version 2.0'
+                                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                                }
+                            }
+
+                            scm {
+                                connection 'https://github.com/datanerds-io/lack.git'
+                                developerConnection 'https://github.com/datanerds-io/lack.git'
+                                url 'https://github.com/datanerds-io/lack'
+                            }
+
+                            developers {
+                                developer {
+                                    id 'larsp'
+                                    name 'Lars Pfannenschmidt'
+                                    email 'lars@d8a.wtf'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
     }
 }
