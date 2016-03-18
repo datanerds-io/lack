@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class LackTest {
 
-    private static LackConfig config = new LackConfig(null, null, new String[]{"127.0.0.1"}, "lack", 1);
+    private static LackConfig config = new LackConfig(null, null, new String[]{"127.0.0.1"}, 9142, "lack", 1);
     private static Lack lack;
     private static Lack otherLack;
     private String resource;

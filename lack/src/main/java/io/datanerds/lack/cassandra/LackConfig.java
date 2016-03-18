@@ -7,7 +7,7 @@ public class LackConfig {
     public final String[] nodes;
     public final String keyspace;
     public final int ttlInSeconds;
-    public int port = 9142;
+    public int port = 9042;
 
     public LackConfig(String username, String password, String[] nodes, String keyspace, int ttlInSeconds) {
         this.username = username;
