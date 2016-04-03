@@ -6,6 +6,8 @@ import io.datanerds.lack.cassandra.CassandraClient;
 import io.datanerds.lack.cassandra.LackConfig;
 import io.datanerds.lack.cassandra.Statements;
 
+import static io.datanerds.lack.Messages.*;
+
 public class Lack {
 
     private final String owner;
@@ -25,21 +27,21 @@ public class Lack {
     public void acquire(String resource) throws LackException {
         ResultSet result = statements.acquire(resource, owner);
         if (!result.wasApplied()) {
-            throw new LackException(String.format("Could not acquire lock for '%s'", resource));
+            throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
         }
     }
 
     public void renew(String resource) throws LackException {
         ResultSet result = statements.renew(resource, owner);
         if (!result.wasApplied()) {
-            throw new LackException(String.format("Could not renew lock for '%s'", resource));
+            throw new LackException(String.format(MESSAGE_RENEW, resource));
         }
     }
 
     public void release(String resource) throws LackException {
         ResultSet result = statements.release(resource, owner);
         if (!result.wasApplied()) {
-            throw new LackException(String.format("Could not release lock for '%s'", resource));
+            throw new LackException(String.format(MESSAGE_RELEASE, resource));
         }
     }
 
