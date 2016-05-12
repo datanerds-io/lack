@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public class LackTest {
 
-    private static LackConfig config = new LackConfig(null, null, new String[]{"127.0.0.1"}, 9142, "lack", 1);
+    private static LackConfig config = new LackConfig(null, null, new String[]{"127.0.0.1"}, 9142, "lack", 3);
     private static Lack lack;
     private static Lack otherLack;
     private String resource;
@@ -24,14 +24,8 @@ public class LackTest {
     public static CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(
             new ClassPathCQLDataSet("setup.cql", "lack"));
 
-
-    @BeforeClass
-    public static void setupCassandra() throws Exception {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-    }
-
     @Before
-    public void setup() {
+    public void setup() throws InterruptedException {
         this.resource = UUID.randomUUID().toString();
         if (isSetupDone) {
             return;
@@ -41,19 +35,11 @@ public class LackTest {
         isSetupDone = true;
     }
 
-
     @Test
     public void simpleAcquireRenewAndRelease() throws LackException {
         lack.acquire(resource);
         lack.renew(resource);
         lack.release(resource);
-    }
-
-    @Test
-    public void alreadyLocked() throws LackException {
-        lack.acquire(resource);
-        thrown.expect(LackException.class);
-        lack.acquire(resource);
     }
 
     @Test
@@ -74,7 +60,36 @@ public class LackTest {
     @Test
     public void testReleaseAfterTtl() throws Exception {
         lack.acquire(resource);
-        Thread.sleep(1200);
+        Thread.sleep(3400);
+        otherLack.acquire(resource);
+    }
+
+    @Test
+    public void renewLocks() throws LackException, InterruptedException {
         lack.acquire(resource);
+        Thread.sleep(2000);
+        lack.renew(resource);
+        Thread.sleep(1500);
+        thrown.expect(LackException.class);
+        otherLack.acquire(resource);
+    }
+
+    @Test
+    public void reacquireLocks() throws LackException, InterruptedException {
+        lack.acquire(resource);
+        Thread.sleep(2000);
+        lack.acquire(resource);
+        Thread.sleep(1500);
+        thrown.expect(LackException.class);
+        otherLack.acquire(resource);
+    }
+
+    @Test
+    public void reacquireWithoutRenewLocks() throws LackException, InterruptedException {
+        lack.acquire(resource);
+        Thread.sleep(2000);
+        lack.acquire(resource, false);
+        Thread.sleep(1500);
+        otherLack.acquire(resource);
     }
 }
