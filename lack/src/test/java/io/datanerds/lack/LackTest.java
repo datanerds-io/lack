@@ -3,7 +3,6 @@ package io.datanerds.lack;
 import io.datanerds.lack.cassandra.LackConfig;
 import org.cassandraunit.CassandraCQLUnit;
 import org.cassandraunit.dataset.cql.ClassPathCQLDataSet;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 
@@ -43,6 +42,13 @@ public class LackTest {
     }
 
     @Test
+    public void alreadyLocked() throws LackException {
+        lack.acquire(resource);
+        thrown.expect(LackException.class);
+        lack.acquire(resource);
+    }
+
+    @Test
     public void alreadyLockedByOther() throws LackException {
         lack.acquire(resource);
         thrown.expect(LackException.class);
@@ -75,21 +81,26 @@ public class LackTest {
     }
 
     @Test
-    public void reacquireLocks() throws LackException, InterruptedException {
+    public void claimLocks() throws LackException, InterruptedException {
         lack.acquire(resource);
         Thread.sleep(2000);
-        lack.acquire(resource);
+        lack.claim(resource);
         Thread.sleep(1500);
         thrown.expect(LackException.class);
         otherLack.acquire(resource);
     }
 
     @Test
-    public void reacquireWithoutRenewLocks() throws LackException, InterruptedException {
-        lack.acquire(resource);
-        Thread.sleep(2000);
-        lack.acquire(resource, false);
-        Thread.sleep(1500);
-        otherLack.acquire(resource);
+    public void simpleClaimRenewAndRelease() throws LackException {
+        lack.claim(resource);
+        lack.renew(resource);
+        lack.release(resource);
     }
+
+    @Test
+    public void claimTwice() throws LackException {
+        lack.claim(resource);
+        lack.claim(resource);
+    }
+
 }

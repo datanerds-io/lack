@@ -9,7 +9,6 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.UUID;
@@ -65,11 +64,8 @@ public class CachedLackTest {
     @Test
     public void alreadyLocked() throws LackException {
         cachedLack.acquire(resource);
+        thrown.expect(LackException.class);
         cachedLack.acquire(resource);
-
-        verify(cache, times(2)).getIfPresent(resource);
-        verify(cache, times(3)).put(resource, true);
-        verify(cache, never()).put(resource, false);
     }
 
     @Test

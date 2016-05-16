@@ -3,7 +3,6 @@ package io.datanerds.lack;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import io.datanerds.lack.cassandra.CassandraClient;
-import io.datanerds.lack.cassandra.Constants;
 import io.datanerds.lack.cassandra.LackConfig;
 import io.datanerds.lack.cassandra.Statements;
 
@@ -27,24 +26,16 @@ public class Lack {
     }
 
     public void acquire(String resource) throws LackException {
-        acquire(resource, true);
-    }
-
-    public void acquire(String resource, boolean renew) throws LackException {
         ResultSet result = statements.acquire(resource, owner);
         if (!result.wasApplied()) {
-            checkLock(resource, result, renew);
+            throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
         }
     }
 
-    private void checkLock(String resource,  ResultSet result, boolean renew) throws LackException {
-        boolean resourceOwnsLock = !result.isExhausted() && owner.equals(result.one().getString(OWNER));
-        if (!resourceOwnsLock) {
-            throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
-        }
-
-        if (renew) {
-            renew(resource);
+    public void claim(String resource) throws LackException {
+        ResultSet result = statements.acquire(resource, owner);
+        if (!result.wasApplied()) {
+            checkLockOwner(resource, result);
         }
     }
 
@@ -66,4 +57,16 @@ public class Lack {
         session.close();
         client.close();
     }
+
+    private void checkLockOwner(String resource,  ResultSet result) throws LackException {
+        if (result.isExhausted()) {
+            throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
+        }
+        String lockOwner = result.one().getString(OWNER);
+        if (!owner.equals(lockOwner)) {
+            throw new LackException(String.format(MESSAGE_LOCK_TAKEN, resource, lockOwner));
+        }
+        renew(resource);
+    }
+
 }
