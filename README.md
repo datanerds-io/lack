@@ -34,6 +34,9 @@ lack.acquire("user-1");
 // Renewing the lock in case we need longer than 42 seconds:
 lack.renew("user-1");
 ...
+// Claiming the lock results in renewal in case we're already owning it and acquiring otherwise
+lack.claim("user-1");
+...
 // Releasing the lock in case we have finished our operation:
 lack.release("user-1");
 ```
