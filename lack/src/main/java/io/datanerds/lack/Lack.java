@@ -7,6 +7,7 @@ import io.datanerds.lack.cassandra.LackConfig;
 import io.datanerds.lack.cassandra.Statements;
 
 import static io.datanerds.lack.Messages.*;
+import static io.datanerds.lack.cassandra.Constants.Columns.OWNER;
 
 public class Lack {
 
@@ -31,6 +32,13 @@ public class Lack {
         }
     }
 
+    public void claim(String resource) throws LackException {
+        ResultSet result = statements.acquire(resource, owner);
+        if (!result.wasApplied()) {
+            renewIfOwned(resource, result);
+        }
+    }
+
     public void renew(String resource) throws LackException {
         ResultSet result = statements.renew(resource, owner);
         if (!result.wasApplied()) {
@@ -49,4 +57,16 @@ public class Lack {
         session.close();
         client.close();
     }
+
+    private void renewIfOwned(String resource,  ResultSet result) throws LackException {
+        if (result.isExhausted()) {
+            throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
+        }
+        String lockOwner = result.one().getString(OWNER);
+        if (!owner.equals(lockOwner)) {
+            throw new LackException(String.format(MESSAGE_LOCK_TAKEN, resource, lockOwner));
+        }
+        renew(resource);
+    }
+
 }

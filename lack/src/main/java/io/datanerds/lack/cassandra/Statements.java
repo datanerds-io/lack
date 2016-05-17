@@ -55,7 +55,7 @@ public class Statements {
 
     public void setTtl(int ttl) {
         logger.info("Setting a default TTL of '{}' seconds", ttl);
-        session.execute(alterTable("leases").withOptions().defaultTimeToLive(ttl));
+        session.execute(alterTable(TABLE).withOptions().defaultTimeToLive(ttl));
     }
 
     public ResultSet acquire(String resource, String owner) {

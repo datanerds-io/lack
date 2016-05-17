@@ -9,7 +9,6 @@ import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.UUID;
@@ -67,10 +66,6 @@ public class CachedLackTest {
         cachedLack.acquire(resource);
         thrown.expect(LackException.class);
         cachedLack.acquire(resource);
-
-        verify(cache, times(2)).getIfPresent(resource);
-        verify(cache, times(1)).put(resource, true);
-        verify(cache, never()).put(resource, false);
     }
 
     @Test
@@ -78,14 +73,6 @@ public class CachedLackTest {
         cachedLack.acquire(resource);
         thrown.expect(LackException.class);
         otherCachedLack.acquire(resource);
-
-        verify(cache, times(1)).getIfPresent(resource);
-        verify(cache, times(1)).put(resource, true);
-        verify(cache, never()).put(resource, false);
-
-        verify(otherCache, times(1)).getIfPresent(resource);
-        verify(otherCache, never()).put(resource, true);
-        verify(otherCache, never()).put(resource, false);
     }
 
     @Test
@@ -94,14 +81,6 @@ public class CachedLackTest {
         cachedLack.release(resource);
         thrown.expect(LackException.class);
         otherCachedLack.release(resource);
-
-        verify(cache, times(1)).getIfPresent(resource);
-        verify(cache, never()).put(resource, true);
-        verify(cache, times(1)).put(resource, false);
-
-        verify(otherCache, never()).getIfPresent(resource);
-        verify(otherCache, never()).put(resource, true);
-        verify(otherCache, never()).put(resource, false);
     }
 
     @Test
