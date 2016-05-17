@@ -35,7 +35,7 @@ public class Lack {
     public void claim(String resource) throws LackException {
         ResultSet result = statements.acquire(resource, owner);
         if (!result.wasApplied()) {
-            checkLockOwner(resource, result);
+            renewIfOwned(resource, result);
         }
     }
 
@@ -58,7 +58,7 @@ public class Lack {
         client.close();
     }
 
-    private void checkLockOwner(String resource,  ResultSet result) throws LackException {
+    private void renewIfOwned(String resource,  ResultSet result) throws LackException {
         if (result.isExhausted()) {
             throw new LackException(String.format(MESSAGE_ACQUIRE, resource));
         }
