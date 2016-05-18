@@ -36,18 +36,18 @@ public class CachedLackTest {
     public static CassandraCQLUnit cassandraCQLUnit = new CassandraCQLUnit(
             new ClassPathCQLDataSet("setup.cql", "lack"));
 
-
-    @BeforeClass
-    public static void setupCassandra() throws Exception {
-        EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-    }
-
     @Before
     public void setup() {
         this.resource = UUID.randomUUID().toString();
 
         cachedLack = new CachedLack(config, "lack", cache);
         otherCachedLack = new CachedLack(config, "otherLack", otherCache);
+    }
+
+    @After
+    public void tearDown() {
+        cachedLack.stop();
+        otherCachedLack.stop();
     }
 
     @Test
